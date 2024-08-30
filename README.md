@@ -1,9 +1,64 @@
-# Zabbix com Docker Compose
+# Zabbix Monitoring Stack with MySQL and Grafana
 
-O arquivo docker-compose.yml que disponibilizamos em nosso Github, foi configurado de forma que o Docker crie 4 containers: zabbix-server, zabbix-frontend, grafana e mysql. Foram utilizadas as imagens oficiais do Zabbix, do Grafana e do MySQL. Os links para consulta estão no final deste artigo. 
+This repository contains a Docker Compose configuration to set up a complete Zabbix monitoring environment. It includes the Zabbix Server, Zabbix Frontend, MySQL, Grafana, and Zabbix Agent, all orchestrated via Docker containers.
 
-Ao executar o comando docker-compose up, o Docker irá subir de forma automática os containers do Zabbix, do Grafana e do MySQL. Além disso, o Zabbix já estará conectado ao banco de dados MySQL e o Grafana já estará com o plugin do Zabbix instalado.
+## Table of Contents
 
-Executar o seguinte comando na pasta que esta localizado o arquivo docker-compose.yml para suber os containers:
+- [Overview](#overview)
+- [Services](#services)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Volumes](#volumes)
+- [Configuration](#configuration)
+- [Contributing](#contributing)
+- [License](#license)
 
-docker-compose up -d
+## Overview
+
+This setup provides a robust monitoring solution with the following components:
+- **Zabbix Server**: Central component for monitoring.
+- **Zabbix Frontend**: Web interface for managing and viewing monitoring data.
+- **MySQL**: Database for storing Zabbix data.
+- **Grafana**: Advanced dashboarding and visualization for Zabbix data.
+- **Zabbix Agent**: Collects metrics from the host machine and sends them to the Zabbix Server.
+
+## Services
+
+### MySQL
+- **Image**: `mysql:8.0`
+- **Ports**: `3306:3306`
+- **Volumes**: `./zabbix/mysql:/var/lib/mysql`
+- **Environment Variables**:
+  - `MYSQL_ROOT_PASSWORD`
+  - `MYSQL_DATABASE`
+  - `MYSQL_USER`
+  - `MYSQL_PASSWORD`
+
+### Zabbix Server
+- **Image**: `zabbix/zabbix-server-mysql:ubuntu-6.0-latest`
+- **Ports**: `10051:10051`
+- **Volumes**: `./zabbix/alertscripts:/usr/lib/zabbix/alertscripts`
+- **Depends on**: `mysql`
+
+### Zabbix Frontend
+- **Image**: `zabbix/zabbix-web-apache-mysql:ubuntu-6.0-latest`
+- **Ports**: `80:8080`, `443:8443`
+- **Depends on**: `mysql`
+
+### Grafana
+- **Image**: `grafana/grafana:latest`
+- **Ports**: `3000:3000`
+- **Depends on**: `mysql`, `zabbix-server`
+
+### Zabbix Agent
+- **Image**: `zabbix/zabbix-agent2:alpine-6.0-latest`
+- **Ports**: `10050:10050`
+- **Depends on**: `zabbix-server`
+
+## Prerequisites
+
+- Docker installed on your machine.
+- Docker Compose installed.
+
+
